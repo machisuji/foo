@@ -7,11 +7,11 @@ require 'omniauth/openid_connect/version'
 Gem::Specification.new do |spec|
   spec.name          = "omniauth-openid-connect"
   spec.version       = OmniAuth::OpenIDConnect::VERSION
-  spec.authors       = ["John Bohn"]
-  spec.email         = ["jjbohn@gmail.com"]
+  spec.authors       = ["John Bohn", "Ilya Shcherbinin", "OpenProject GmbH"]
+  spec.email         = ["jjbohn@gmail.com", "m0n9oose@gmail.com", "info@openproject.com"]
   spec.summary       = %q{OpenID Connect Strategy for OmniAuth}
   spec.description   = %q{OpenID Connect Strategy for OmniAuth}
-  spec.homepage      = "https://github.com/jjbohn/omniauth-openid-connect"
+  spec.homepage      = "https://github.com/opf/omniauth-openid-connect"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
