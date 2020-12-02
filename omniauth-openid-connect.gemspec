@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'guard', '~> 2.14'
   spec.add_development_dependency 'guard-minitest', '~> 2.4'
   spec.add_development_dependency 'guard-bundler', '~> 2.1'
-  spec.add_development_dependency 'rake', '~> 11.3'
+  spec.add_development_dependency 'rake', '~> 12.0'
   spec.add_development_dependency 'simplecov', '~> 0.12'
   spec.add_development_dependency 'pry', '~> 0.9'
   spec.add_development_dependency 'coveralls', '~> 0.8'
