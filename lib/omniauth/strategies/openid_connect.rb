@@ -126,10 +126,11 @@ module OmniAuth
 
       def other_phase
         if logout_path_pattern.match?(current_path)
-          options.issuer = issuer if options.issuer.nil? || options.issuer.empty?
           discover!
+
           return redirect(end_session_uri) if end_session_uri
         end
+
         call_app!
       end
 
@@ -139,6 +140,7 @@ module OmniAuth
 
       def end_session_uri
         return unless end_session_endpoint_is_valid?
+
         end_session_uri = URI(client_options.end_session_endpoint)
         end_session_uri.query = encoded_post_logout_redirect_uri
         end_session_uri.to_s
@@ -181,10 +183,10 @@ module OmniAuth
       end
 
       def discover!
+        return unless options.discovery
+
         options.issuer = issuer if options.issuer.blank?
         options.verify_id_token = true if options.verify_id_token.nil?
-
-        return unless options.discovery
 
         client_options.authorization_endpoint = config.authorization_endpoint
         client_options.token_endpoint = config.token_endpoint
