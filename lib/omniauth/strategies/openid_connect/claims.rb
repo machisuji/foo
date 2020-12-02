@@ -39,53 +39,60 @@ module OmniAuth
 
         def claims_auth_param
           return nil unless claims?
-  
+
           ERB::Util.url_encode Hash(options.claims).to_json
         end
 
         def claims
-          @claims ||= Hash(options.claims).with_indifferent_access
+          @claims ||= begin
+            input = options.claims.is_a?(String) ? JSON.parse(options.claims) : options.claims
+
+            Hash(input).with_indifferent_access
+          end
         end
-  
+
         def claims?
           claims.present? && claims.values.any?(&:present?)
         end
-  
+
         ##
         # Indicates whether claims have to be verified in either id_token or userinfo the response.
         # `acr_values` claims are by definition voluntary and therefore don't need to be verified.
         def verify_claims?
           claims? && claims.keys.any? { |context| essential_claims(context).present? }
         end
-  
+
         def essential_claims(context)
           Hash(claims[context])
             .select { |claim, request| Hash(request)["essential"].to_s == "true" }
         end
-  
+
         ##
         # Verifies claims returned in the ID token. Claims from the userinfo endpoint are not verified for now.
-        # 
+        #
         def verify_id_token_claims!(access_token)
           return unless claims?
-  
+
           id_token = decode_id_token access_token.id_token
-  
+
           verify_acr! id_token.acr
         end
-  
+
         def verify_acr!(acr)
           expected_acr_values = acr_values Hash(essential_claims(:id_token)["acr"])["values"]
 
           return unless expected_acr_values.present?
 
           actual_acr_values = acr_values acr
-  
+
           return if expected_acr_values.any? { |value| actual_acr_values.include? value }
-  
+
+          expected = expected_acr_values.map { |v| "'#{v}'" }.join(", ")
+          actual = actual_acr_values.map { |v| "'#{v}'" }.join(", ")
+
           raise(
-            OpenIDConnect::ResponseObject::IdToken::InvalidToken,
-            "Expected one of ACR values [#{expected_acr_values.join("'", "', '", "'")}] in [#{actual_acr_values.join("'", "', '", "'")}]"
+            ::OpenIDConnect::ResponseObject::IdToken::InvalidToken,
+            "Expected one of ACR values [#{expected}] in [#{actual}]"
           )
         end
 
