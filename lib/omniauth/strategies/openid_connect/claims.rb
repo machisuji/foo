@@ -75,24 +75,26 @@ module OmniAuth
 
           id_token = decode_id_token access_token.id_token
 
-          verify_acr! id_token.acr
+          essential_claims(:id_token).each do |claim, request|
+            require_essential_claim! claim, Hash(request), id_token.send(claim) if id_token.respond_to? claim
+          end
         end
 
-        def verify_acr!(acr)
-          expected_acr_values = acr_values Hash(essential_claims(:id_token)["acr"])["values"]
+        def require_essential_claim!(claim, request, response)
+          expected_values = claim_values request["value"].presence || request["values"].presence
 
-          return unless expected_acr_values.present?
+          return unless expected_values.present?
 
-          actual_acr_values = acr_values acr
+          actual_values = claim_values response
 
-          return if expected_acr_values.any? { |value| actual_acr_values.include? value }
+          return if expected_values.any? { |value| actual_values.include? value }
 
-          expected = expected_acr_values.map { |v| "'#{v}'" }.join(", ")
-          actual = actual_acr_values.map { |v| "'#{v}'" }.join(", ")
+          expected = expected_values.map { |v| "'#{v}'" }.join(", ")
+          actual = actual_values.map { |v| "'#{v}'" }.join(", ")
 
           raise(
             ::OpenIDConnect::ResponseObject::IdToken::InvalidToken,
-            "Expected one of ACR values [#{expected}] in [#{actual}]"
+            "Expected one of #{claim.to_s.upcase} values [#{expected}] in [#{actual}]"
           )
         end
 
@@ -104,7 +106,7 @@ module OmniAuth
         # @param input [String, Array<String>] ACR values either directly as an array or as a space-separated string.
         #
         # @return [Array<String>] An array of ACR values.
-        def acr_values(input)
+        def claim_values(input)
           Array(input).flat_map { |value| String(value).split(" ") }
         end
       end
