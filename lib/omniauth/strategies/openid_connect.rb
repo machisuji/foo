@@ -47,6 +47,7 @@ module OmniAuth
       option :hd, nil
       option :max_age
       option :ui_locales
+      option :claims_locales
       option :id_token_hint
       option :verify_id_token, nil
       option :login_hint
@@ -159,9 +160,9 @@ module OmniAuth
           response_mode: options.response_mode,
           scope: options.scope,
           state: new_state,
-          login_hint: params['login_hint'],
-          ui_locales: params['ui_locales'],
-          claims_locales: params['claims_locales'],
+          login_hint: params['login_hint'].presence || options.login_hint.presence,
+          ui_locales: params['ui_locales'].presence || options.ui_locales.presence,
+          claims_locales: params['claims_locales'].presence || options.claims_locales.presence,
           prompt: options.prompt,
           nonce: (new_nonce if options.send_nonce),
           hd: options.hd,
