@@ -188,9 +188,11 @@ module OmniAuth
           id_token.stubs(:acr).returns([])
         end
 
-        assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken, "Expected one of ACR values ['phr', 'phrh'] in []" do 
+        ex = assert_raises ::OpenIDConnect::ResponseObject::IdToken::InvalidToken do
           test_callback_phase(options: options, userinfo: false, stub_id_token: stub_id_token)
         end
+
+        assert_equal ex.message, "Expected one of ACR values ['phr', 'phrh'] in []"
       end
 
       def test_callback_phase_with_returned_claims
