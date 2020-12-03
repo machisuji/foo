@@ -81,7 +81,7 @@ module OmniAuth
         end
 
         def require_essential_claim!(claim, request, response)
-          expected_values = claim_values request["value"].presence || request["values"].presence
+          expected_values = [request["value"]].select(&:present?).presence || claim_values(request["values"].presence)
 
           return unless expected_values.present?
 
