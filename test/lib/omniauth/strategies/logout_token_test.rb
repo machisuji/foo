@@ -44,6 +44,34 @@ module OmniAuth
           logout_token.verify!(expected)
         end
       end
+
+      def test_backchannel_logout_phase
+        request.stubs(:params).returns('logout_token' => encoded_logout_token)
+        strategy.options.issuer = 'http://localhost:8080/realms/test'
+        strategy.options.client_options.identifier = 'http://localhost:3000'
+
+        callback = stub
+        callback.expects(:call)
+        strategy.options.backchannel_logout_callback = callback
+
+        request.stubs(:path_info).returns('/auth/openidconnect/backchannel-logout')
+        strategy.other_phase
+      end
+
+      def test_backchannel_logout_phase_invalid_issuer
+        request.stubs(:params).returns('logout_token' => encoded_logout_token)
+        strategy.options.issuer = 'example.com'
+        strategy.options.client_options.identifier = 'http://localhost:3000'
+
+        callback = stub
+        callback.expects(:call).never
+        strategy.options.backchannel_logout_callback = callback
+
+        request.stubs(:path_info).returns('/auth/openidconnect/backchannel-logout')
+        assert_raises(OmniAuth::OpenIDConnect::LogoutToken::InvalidIssuer) do
+          strategy.other_phase
+        end
+      end
     end
   end
 end
