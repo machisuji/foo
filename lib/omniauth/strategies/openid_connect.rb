@@ -232,10 +232,12 @@ module OmniAuth
         return fail!(:missing_logout_token) unless plain_token.present?
         logout_token = decode_logout_token(plain_token)
 
-        logout_token.verify!(
-          issuer: options.issuer,
-          client_id: client_options.identifier
-        )
+        if options.verify_logout_token
+          logout_token.verify!(
+            issuer: options.issuer,
+            client_id: client_options.identifier
+          )
+        end
 
         options.backchannel_logout_callback.call(logout_token)
       end
