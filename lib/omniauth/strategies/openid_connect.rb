@@ -8,6 +8,7 @@ require 'forwardable'
 
 require 'omniauth/strategies/openid_connect/user_info_amendments'
 require 'omniauth/strategies/openid_connect/claims'
+require 'omniauth/strategies/openid_connect/backchannel_logout'
 
 module OmniAuth
   module Strategies
@@ -19,6 +20,7 @@ module OmniAuth
 
       prepend UserInfoAmendments
       prepend Claims
+      prepend BackchannelLogout
 
       option :client_options, {
         identifier: nil,
@@ -50,15 +52,12 @@ module OmniAuth
       option :claims_locales
       option :id_token_hint
       option :verify_id_token, nil
-      option :verify_logout_token, true
       option :login_hint
       option :acr_values # requesting voluntary claims, e.g. 'phr phrh' for phishing-resistant authentication
       option :send_nonce, true
       option :send_scope_to_token_endpoint, true
       option :client_auth_method
       option :post_logout_redirect_uri
-
-      option :backchannel_logout_callback, nil
 
       uid { user_info.sub }
 
@@ -136,13 +135,6 @@ module OmniAuth
 
           return redirect(end_session_uri) if end_session_uri
         end
-
-        if options.backchannel_logout_callback && backchannel_logout_path_pattern.match?(current_path)
-          discover!
-          perform_backchannel_logout!(params['logout_token'])
-          return Rack::Response.new([''], 204).finish
-        end
-
 
         call_app!
       end
@@ -228,21 +220,6 @@ module OmniAuth
         @id_token
       end
 
-      def perform_backchannel_logout!(plain_token)
-        return fail!(:missing_logout_token) unless plain_token.present?
-        logout_token = decode_logout_token(plain_token)
-
-        if options.verify_logout_token
-          logout_token.verify!(
-            issuer: options.issuer,
-            client_id: client_options.identifier
-          )
-        end
-
-        options.backchannel_logout_callback.call(logout_token)
-      end
-
-
       def validate_access_token!(_access_token)
         verify_id_token! if options.verify_id_token
       end
@@ -266,12 +243,6 @@ module OmniAuth
         key = verify ? public_key : :skip_verification
 
         ::OpenIDConnect::ResponseObject::IdToken.decode(id_token, key)
-      end
-
-      def decode_logout_token(token, verify: options.verify_id_token)
-        key = verify ? public_key : :skip_verification
-
-        ::OmniAuth::OpenIDConnect::LogoutToken.decode(token, key)
       end
 
       def client_options
@@ -350,10 +321,6 @@ module OmniAuth
 
       def logout_path_pattern
         @logout_path_pattern ||= %r{\A#{Regexp.quote(request_path)}(/logout)}
-      end
-
-      def backchannel_logout_path_pattern
-        @backchannel_logout_path_pattern ||= %r{\A#{Regexp.quote(request_path)}(/backchannel-logout)}
       end
 
       class CallbackError < StandardError

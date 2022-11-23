@@ -59,7 +59,6 @@ module OmniAuth
       end
 
       def test_backchannel_logout_phase_invalid_issuer
-        request.stubs(:params).returns('logout_token' => encoded_logout_token)
         strategy.options.issuer = 'example.com'
         strategy.options.client_options.identifier = 'http://localhost:3000'
 
@@ -69,7 +68,7 @@ module OmniAuth
 
         request.stubs(:path_info).returns('/auth/openidconnect/backchannel-logout')
         assert_raises(OmniAuth::OpenIDConnect::LogoutToken::InvalidIssuer) do
-          strategy.other_phase
+          strategy.perform_backchannel_logout!(encoded_logout_token)
         end
       end
     end
