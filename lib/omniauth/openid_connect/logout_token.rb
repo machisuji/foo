@@ -1,3 +1,5 @@
+require 'openid_connect'
+
 module OmniAuth
   module OpenIDConnect
     class LogoutToken < ::OpenIDConnect::ConnectObject
