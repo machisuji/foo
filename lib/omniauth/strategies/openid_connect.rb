@@ -236,7 +236,7 @@ module OmniAuth
         sid = id_token&.sid
         return unless sid
 
-        session['oidc_sid'] = sid
+        session['omniauth.oidc_sid'] = sid
       end
 
       def decode_id_token(id_token, verify: options.verify_id_token)
