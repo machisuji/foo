@@ -25,7 +25,7 @@ module OmniAuth
       def initialize(attributes = {})
         super(attributes)
 
-        self.iat = Time.zone.at(iat.to_i) unless iat.nil?
+        self.iat = Time.at(iat.to_i).getutc unless iat.nil?
         self.auth_time = auth_time.to_i unless auth_time.nil?
       end
 
