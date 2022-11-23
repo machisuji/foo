@@ -83,7 +83,7 @@ module OmniAuth
       credentials do
         {
           id_token: access_token.id_token,
-          sid: id_token.sid,
+          sid: id_token&.sid,
           token: access_token.access_token,
           refresh_token: access_token.refresh_token,
           expires_in: access_token.expires_in,
@@ -220,7 +220,12 @@ module OmniAuth
       end
 
       def id_token
-        @id_token ||= decode_id_token(access_token.id_token)
+        defined?(@id_token) || begin
+          encoded = access_token.id_token
+          @id_token = encoded ? decode_id_token(encoded) : nil
+        end
+
+        @id_token
       end
 
       def perform_backchannel_logout!(plain_token)
