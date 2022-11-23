@@ -29,9 +29,9 @@ module OmniAuth
           backchannel_response
         rescue StandardError => e
           Rack::Response.new(
-            [''],
+            [e.message],
             400,
-            e.message
+            {}
           ).finish
         end
 
