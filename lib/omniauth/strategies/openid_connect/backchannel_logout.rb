@@ -31,7 +31,7 @@ module OmniAuth
           Rack::Response.new(
             [e.message],
             400,
-            {}
+            { 'Cache-Control' => 'no-store' }
           ).finish
         end
 
