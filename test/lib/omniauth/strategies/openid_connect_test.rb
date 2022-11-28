@@ -149,6 +149,7 @@ module OmniAuth
 
         id_token = stub('OpenIDConnect::ResponseObject::IdToken')
         id_token.stubs(:verify!).with(issuer: strategy.options.issuer, client_id: @identifier, nonce: nonce).returns(true)
+        id_token.stubs(:sid).returns('oidc_sid')
 
         if stub_id_token.respond_to? :call
           stub_id_token.call id_token
@@ -241,6 +242,7 @@ module OmniAuth
 
         id_token = stub('OpenIDConnect::ResponseObject::IdToken')
         id_token.stubs(:verify!).with(issuer: 'https://example.com/', client_id: @identifier, nonce: nonce).returns(true)
+        id_token.stubs(:sid).returns('oidc_sid')
         ::OpenIDConnect::ResponseObject::IdToken.stubs(:decode).returns(id_token)
 
         strategy.unstub(:user_info)
@@ -351,6 +353,7 @@ module OmniAuth
 
         id_token = stub('OpenIDConnect::ResponseObject::IdToken')
         id_token.stubs(:verify!).returns(true)
+        id_token.stubs(:sid).returns('oidc_sid')
         ::OpenIDConnect::ResponseObject::IdToken.stubs(:decode).returns(id_token)
 
         access_token = stub('OpenIDConnect::AccessToken')
@@ -370,7 +373,8 @@ module OmniAuth
             token: access_token.access_token,
             refresh_token: access_token.refresh_token,
             expires_in: access_token.expires_in,
-            scope: access_token.scope
+            scope: access_token.scope,
+            sid: 'oidc_sid',
           },
           strategy.credentials
         )
@@ -438,20 +442,19 @@ module OmniAuth
           id_token: File.read('test/fixtures/id_token.txt'),
           token_type: 'Bearer',
         }.to_json
-        success = Struct.new(:status, :body).new(200, json_response)
 
         request.stubs(:path_info).returns('')
         strategy.call!('rack.session' => { 'omniauth.state' => state, 'omniauth.nonce' => nonce })
 
         id_token = stub('OpenIDConnect::ResponseObject::IdToken')
         id_token.stubs(:verify!).with(issuer: strategy.options.issuer, client_id: @identifier, nonce: nonce).returns(true)
+        id_token.stubs(:sid).returns('oidc_sid')
         ::OpenIDConnect::ResponseObject::IdToken.stubs(:decode).returns(id_token)
 
-        HTTPClient.any_instance.stubs(:post).with(
-          "#{ opts.scheme }://#{ opts.host }:#{ opts.port }#{ opts.token_endpoint }",
-          { scope: 'openid', grant_type: :client_credentials, client_id: @identifier, client_secret: @secret },
-          {}
-        ).returns(success)
+        body = { scope: 'openid', grant_type: 'client_credentials', client_id: @identifier, client_secret: @secret }
+        stub_request(:post, "https://foobar.com:443/token")
+          .with(body: body)
+          .to_return(body: json_response)
 
         assert(strategy.send :access_token)
       end

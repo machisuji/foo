@@ -8,6 +8,7 @@ require 'forwardable'
 
 require 'omniauth/strategies/openid_connect/user_info_amendments'
 require 'omniauth/strategies/openid_connect/claims'
+require 'omniauth/strategies/openid_connect/backchannel_logout'
 
 module OmniAuth
   module Strategies
@@ -19,6 +20,7 @@ module OmniAuth
 
       prepend UserInfoAmendments
       prepend Claims
+      prepend BackchannelLogout
 
       option :client_options, {
         identifier: nil,
@@ -80,6 +82,7 @@ module OmniAuth
       credentials do
         {
           id_token: access_token.id_token,
+          sid: id_token&.sid,
           token: access_token.access_token,
           refresh_token: access_token.refresh_token,
           expires_in: access_token.expires_in,
@@ -114,6 +117,7 @@ module OmniAuth
           client.authorization_code = authorization_code
 
           validate_access_token! access_token
+          store_session_id!
 
           super
         end
@@ -207,16 +211,32 @@ module OmniAuth
         )
       end
 
-      def validate_access_token!(access_token)
-        verify_id_token! decode_id_token(access_token.id_token) if options.verify_id_token
+      def id_token
+        defined?(@id_token) || begin
+          encoded = access_token.id_token
+          @id_token = encoded ? decode_id_token(encoded) : nil
+        end
+
+        @id_token
       end
 
-      def verify_id_token!(id_token)
+      def validate_access_token!(_access_token)
+        verify_id_token! if options.verify_id_token
+      end
+
+      def verify_id_token!
         id_token.verify!(
           issuer: options.issuer,
           client_id: client_options.identifier,
           nonce: stored_nonce
         )
+      end
+
+      def store_session_id!
+        sid = id_token&.sid
+        return unless sid
+
+        session['omniauth.oidc_sid'] = sid
       end
 
       def decode_id_token(id_token, verify: options.verify_id_token)
