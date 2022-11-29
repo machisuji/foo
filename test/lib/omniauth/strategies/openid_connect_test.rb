@@ -342,8 +342,14 @@ module OmniAuth
         assert_equal({ website: user_info.website }, info[:urls])
       end
 
-      def test_extra
-        assert_equal({ raw_info: user_info.as_json }, strategy.extra)
+      def test_info_custom_mapping
+        strategy.options.attribute_map = { login: 'foobar' }
+
+        info = strategy.info
+
+        assert_equal user_info.name, info[:name]
+        assert_equal user_info.email, info[:email]
+        assert_equal 'bar', info[:login]
       end
 
       def test_credentials
