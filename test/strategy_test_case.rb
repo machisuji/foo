@@ -27,6 +27,8 @@ class StrategyTestCase < MiniTest::Test
       picture: Faker::Internet.url + '.png',
       phone_number: Faker::PhoneNumber.phone_number,
       website: Faker::Internet.url,
+      # custom claim
+      foobar: 'bar'
     )
   end
 

@@ -6,7 +6,7 @@ require 'omniauth'
 require 'openid_connect'
 require 'forwardable'
 
-require 'omniauth/strategies/openid_connect/user_info_amendments'
+require 'omniauth/strategies/openid_connect/user_info'
 require 'omniauth/strategies/openid_connect/claims'
 require 'omniauth/strategies/openid_connect/backchannel_logout'
 
@@ -18,7 +18,7 @@ module OmniAuth
 
       def_delegator :request, :params
 
-      prepend UserInfoAmendments
+      prepend UserInfo
       prepend Claims
       prepend BackchannelLogout
 
@@ -58,26 +58,6 @@ module OmniAuth
       option :send_scope_to_token_endpoint, true
       option :client_auth_method
       option :post_logout_redirect_uri
-
-      uid { user_info.sub }
-
-      info do
-        {
-          name: user_info.name,
-          email: user_info.email,
-          nickname: user_info.preferred_username,
-          first_name: user_info.given_name,
-          last_name: user_info.family_name,
-          gender: user_info.gender,
-          image: user_info.picture,
-          phone: user_info.phone_number,
-          urls: { website: user_info.website }
-        }
-      end
-
-      extra do
-        { raw_info: user_info.raw_attributes }
-      end
 
       credentials do
         {
@@ -198,10 +178,6 @@ module OmniAuth
         client_options.userinfo_endpoint = config.userinfo_endpoint
         client_options.jwks_uri = config.jwks_uri
         client_options.end_session_endpoint = config.end_session_endpoint if config.respond_to?(:end_session_endpoint)
-      end
-
-      def user_info
-        @user_info ||= access_token.userinfo!
       end
 
       def access_token
