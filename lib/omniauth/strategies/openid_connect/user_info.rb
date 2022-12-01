@@ -38,7 +38,6 @@ module OmniAuth
             name: :name,
             email: :email,
             nickname: :preferred_username,
-            login: :preferred_username,
             first_name: :given_name,
             last_name: :family_name,
             gender: :gender,
