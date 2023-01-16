@@ -50,7 +50,6 @@ module OmniAuth
       option :max_age
       option :ui_locales
       option :claims_locales
-      option :id_token_hint
       option :verify_id_token, nil
       option :login_hint
       option :acr_values # requesting voluntary claims, e.g. 'phr phrh' for phishing-resistant authentication
