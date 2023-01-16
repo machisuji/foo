@@ -58,7 +58,8 @@ module OmniAuth
       end
 
       def test_logout_phase_with_discovery_and_post_logout_redirect_uri
-        expected_redirect = 'https://example.com/logout?post_logout_redirect_uri=https%3A%2F%2Fmysite.com'
+        id_token = File.read('test/fixtures/id_token.txt').chomp
+        expected_redirect = "https://example.com/logout?id_token_hint=#{id_token}&post_logout_redirect_uri=https%3A%2F%2Fmysite.com"
         strategy.options.client_options.host = 'example.com'
         strategy.options.discovery = true
         strategy.options.post_logout_redirect_uri = 'https://mysite.com'
@@ -66,6 +67,16 @@ module OmniAuth
         issuer = stub('OpenIDConnect::Discovery::Issuer')
         issuer.stubs(:issuer).returns('https://example.com/')
         ::OpenIDConnect::Discovery::Provider.stubs(:discover!).returns(issuer)
+
+        body = { scope: 'openid', grant_type: 'client_credentials' }
+        json_response = {
+          access_token: 'test_access_token',
+          id_token:,
+          token_type: 'Bearer',
+        }.to_json
+        stub_request(:post, "https://example.com:443/token")
+          .with(body: body)
+          .to_return(body: json_response)
 
         config = stub('OpenIDConnect::Discovery::Provder::Config')
         config.stubs(:authorization_endpoint).returns('https://example.com/authorization')
