@@ -24,10 +24,12 @@ module OmniAuth
         end
 
         def handle_backchannel_flow
+          log(:debug, "Handling backchannel logout")
           discover!
           perform_backchannel_logout!(params['logout_token'])
           backchannel_response
         rescue StandardError => e
+          log(:error, "Failed to process backchannel logout: #{e.message}")
           Rack::Response.new(
             [e.message],
             400,
@@ -39,11 +41,13 @@ module OmniAuth
           return fail!(:missing_logout_token) unless plain_token.present?
           logout_token = decode_logout_token(plain_token)
 
+          log(:debug, "Verifying logout token")
           logout_token.verify!(
             issuer: options.issuer,
             client_id: client_options.identifier
           )
 
+          log(:debug, "Calling app backchannel logout callback")
           options.backchannel_logout_callback.call(logout_token)
         end
 
