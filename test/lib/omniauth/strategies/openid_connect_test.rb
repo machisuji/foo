@@ -76,7 +76,7 @@ module OmniAuth
         }.to_json
         stub_request(:post, "https://example.com:443/token")
           .with(body: body)
-          .to_return(body: json_response)
+          .to_return(body: json_response, headers: { "content-type" => "application/json; charset=utf-8"})
 
         config = stub('OpenIDConnect::Discovery::Provder::Config')
         config.stubs(:authorization_endpoint).returns('https://example.com/authorization')
@@ -497,7 +497,7 @@ module OmniAuth
         body = { scope: 'openid', grant_type: 'client_credentials', client_id: @identifier, client_secret: @secret }
         stub_request(:post, "https://foobar.com:443/token")
           .with(body: body)
-          .to_return(body: json_response)
+          .to_return(body: json_response, headers: { "content-type" => "application/json; charset=utf-8"})
 
         assert(strategy.send :access_token)
       end
