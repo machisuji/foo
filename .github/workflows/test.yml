@@ -1,0 +1,25 @@
+name: "Test suite"
+on:
+  push:
+    branches:
+      - dev
+      - release/*
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup ruby
+      uses: ruby/setup-ruby@v1
+    - name: test
+      run: |
+        bunde install
+        bundle exec rake tests
