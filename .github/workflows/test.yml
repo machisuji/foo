@@ -24,4 +24,4 @@ jobs:
         bundler-cache: true
     - name: test
       run: |
-        bundle exec rake tests
+        bundle exec rake test
