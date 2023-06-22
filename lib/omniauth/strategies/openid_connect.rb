@@ -146,7 +146,7 @@ module OmniAuth
           login_hint: params['login_hint'].presence || options.login_hint.presence,
           ui_locales: params['ui_locales'].presence || options.ui_locales.presence,
           claims_locales: params['claims_locales'].presence || options.claims_locales.presence,
-          prompt: options.prompt,
+          prompt: params['prompt'].presence || options.prompt.presence,
           nonce: (new_nonce if options.send_nonce),
           hd: options.hd,
           acr_values: options.acr_values
