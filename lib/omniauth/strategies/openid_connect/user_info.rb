@@ -28,8 +28,10 @@ module OmniAuth
           mapping = default_attribute_map.merge(options.attribute_map)
           values = user_info.raw_attributes.symbolize_keys
           mapping.to_h do |k, possible_values|
+            # Avoid using filter_map here as we want to include false values
             mapped_value = Array(possible_values)
-              .filter_map { |v| values[v.to_sym] }
+              .map { |v| values[v.to_sym] }
+              .reject { |v| v.nil? || v == '' }
               .first
 
             [k.to_sym, mapped_value]
