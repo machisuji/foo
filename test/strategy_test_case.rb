@@ -1,4 +1,4 @@
-class StrategyTestCase < MiniTest::Test
+class StrategyTestCase < Minitest::Test
   class DummyApp
     def call(env); end
   end
@@ -28,7 +28,8 @@ class StrategyTestCase < MiniTest::Test
       phone_number: Faker::PhoneNumber.phone_number,
       website: Faker::Internet.url,
       # custom claim
-      foobar: 'bar'
+      foobar: 'bar',
+      isAdmin: false
     )
   end
 

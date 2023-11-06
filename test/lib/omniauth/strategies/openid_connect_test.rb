@@ -363,6 +363,30 @@ module OmniAuth
         assert_equal 'bar', info[:login]
       end
 
+      def test_info_boolean_mapping_false
+        strategy.options.attribute_map = { admin: 'isAdmin' }
+
+        info = strategy.info
+
+        assert_equal user_info.name, info[:name]
+        assert_equal user_info.email, info[:email]
+        assert_equal false, info[:admin]
+      end
+
+      def test_info_boolean_mapping_true
+        azure_userinfo = ::OpenIDConnect::ResponseObject::UserInfo.new(
+          sub: SecureRandom.hex(16),
+          name: Faker::Name.name,
+          isAdmin: true
+        )
+        strategy.stubs(:user_info).returns(azure_userinfo)
+        strategy.options.attribute_map = { admin: 'isAdmin' }
+
+        info = strategy.info
+
+        assert_equal true, info[:admin]
+      end
+
       def test_info_mail_unique_mapping
         azure_userinfo = ::OpenIDConnect::ResponseObject::UserInfo.new(
           sub: SecureRandom.hex(16),
